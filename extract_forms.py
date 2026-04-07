@@ -85,27 +85,29 @@ def extract_form_details(filepath):
 # All form templates
 forms = [
     ("Social Service", [
-        "form_templates/Social Service/2025 CASE FOLDER.docx",
+        "backend/form_templates/Social Service/2025 CASE FOLDER.docx",
     ]),
     ("Home Life Service", [
-        "form_templates/Home Life Service/FINAL INVENTORY UPON DISCHARGE 2025.docx",
-        "form_templates/Home Life Service/FINAL PROGRESS NOTES 2025.docx",
-        "form_templates/Home Life Service/FINAL INVENTORY UPON ADMISSION 2025.docx",
-        "form_templates/Home Life Service/FINAL INCIDENT REPORT 2025.docx",
-        "form_templates/Home Life Service/FIINAL NEW OUT ON PASS 1.docx",
-        "form_templates/Home Life Service/FINAL INVENTORY REPORTS 2025.docx",
+        "backend/form_templates/Home Life Service/FINAL INVENTORY UPON DISCHARGE 2025.docx",
+        "backend/form_templates/Home Life Service/FINAL PROGRESS NOTES 2025.docx",
+        "backend/form_templates/Home Life Service/FINAL INVENTORY UPON ADMISSION 2025.docx",
+        "backend/form_templates/Home Life Service/FINAL INCIDENT REPORT 2025.docx",
+        "backend/form_templates/Home Life Service/FIINAL NEW OUT ON PASS 1.docx",
+        "backend/form_templates/Home Life Service/FINAL INVENTORY REPORTS 2025.docx",
     ]),
+
     ("Psychological Service", [
-        "form_templates/Psychological Service/Psych Service Progress Notes.docx",
-        "form_templates/Psychological Service/Psych Service Group Session I Activity.docx",
-        "form_templates/Psychological Service/Inter-Service Referral (1).docx",
-        "form_templates/Psychological Service/Individual Sessions Report Blank Template.docx",
-        "form_templates/Psychological Service/Initial Psychological Assessment.docx",
-        "form_templates/Psychological Service/Psychometricians Report.docx",
+        "backend/form_templates/Psychological Service/Psych Service Progress Notes.docx",
+        "backend/form_templates/Psychological Service/Psych Service Group Session I Activity.docx",
+        "backend/form_templates/Psychological Service/Inter-Service Referral (1).docx",
+        "backend/form_templates/Psychological Service/Individual Sessions Report Blank Template.docx",
+        "backend/form_templates/Psychological Service/Initial Psychological Assessment.docx",
+        "backend/form_templates/Psychological Service/Psychometricians Report.docx",
     ]),
+
 ]
 
-base_path = "E:/Capstone/ElderCare"
+base_path = "."
 
 for service_name, files in forms:
     print(f"\n{'#'*80}")

@@ -4,7 +4,7 @@ import re
 import os
 import zipfile
 
-template_path = r'c:\eldercare_rcfms\form_templates\Home Life Service\inventory_monthly.docx'
+template_path = r'backend/form_templates/Home Life Service/inventory_monthly.docx'
 
 print(f"Inspecting: {template_path}")
 

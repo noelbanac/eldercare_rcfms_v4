@@ -44,27 +44,30 @@ class DocumentService:
                 pythoncom.CoInitialize()
 
             # 1. Resolve Template Path
-            # Base dir is the backend folder's parent (root of project)
+            # Base dir is the project root
             current_dir = os.path.dirname(os.path.abspath(__file__))
             base_dir = os.path.abspath(os.path.join(current_dir, '..'))
             
+            # The templates are now in backend/form_templates
+            templates_root = os.path.join(current_dir, 'form_templates')
+            
             print(f" * DEBUG: Current Dir: {current_dir}")
             print(f" * DEBUG: Base Dir (Project Root): {base_dir}")
+            print(f" * DEBUG: Templates Root: {templates_root}")
 
-            template_path = DocumentService._find_template(base_dir, service_unit, template_type)
+            template_path = DocumentService._find_template(templates_root, service_unit, template_type)
             
             if not template_path:
                 # LIST DIRECTORIES FOR DEBUGGING
-                templates_dir = os.path.join(base_dir, 'form_templates')
-                if os.path.exists(templates_dir):
-                     print(f" * DEBUG: contents of form_templates: {os.listdir(templates_dir)}")
-                     target_dir = os.path.join(templates_dir, service_unit)
+                if os.path.exists(templates_root):
+                     print(f" * DEBUG: contents of form_templates: {os.listdir(templates_root)}")
+                     target_dir = os.path.join(templates_root, service_unit)
                      if os.path.exists(target_dir):
                          print(f" * DEBUG: contents of {service_unit}: {os.listdir(target_dir)}")
                      else:
-                         print(f" * DEBUG: {service_unit} folder NOT FOUND in {templates_dir}")
+                         print(f" * DEBUG: {service_unit} folder NOT FOUND in {templates_root}")
                 else:
-                    print(f" * DEBUG: form_templates folder NOT FOUND at {templates_dir}")
+                    print(f" * DEBUG: form_templates folder NOT FOUND at {templates_root}")
 
                 raise FileNotFoundError(f"Template not found for type: {template_type} in {service_unit}")
 
@@ -391,21 +394,22 @@ class DocumentService:
             print(f" * WARNING: Failed to prune trailing paragraphs: {e}")
 
     @staticmethod
-    def _find_template(base_dir, service_unit, template_type):
+    def _find_template(templates_dir, service_unit, template_type):
         """
         Helper to find the correct .docx file.
+        templates_dir: Path to the 'form_templates' directory.
         service_unit: 'Social Service', 'Home Life Service', etc.
         template_type: 'admission_slip', 'case_conference', etc.
         """
         folder_name = service_unit
         
         # 1. Try exact match in known folder
-        candidate_path = os.path.join(base_dir, 'form_templates', folder_name, f"{template_type}.docx")
+        candidate_path = os.path.join(templates_dir, folder_name, f"{template_type}.docx")
         if os.path.exists(candidate_path):
             return candidate_path
 
         # 2. Fuzzy search in specific folder
-        target_folder = os.path.join(base_dir, 'form_templates', folder_name)
+        target_folder = os.path.join(templates_dir, folder_name)
         if os.path.exists(target_folder):
             print(f" * DEBUG: Searching in {target_folder} for {template_type}")
             for file in os.listdir(target_folder):

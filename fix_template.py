@@ -98,7 +98,7 @@ def create_template():
     val_cells[3].text = '\n\n{{ noted_by }}'
     
     # Save
-    path = r"C:\eldercare_rcfms\form_templates\Home Life Service\inventory_admission.docx"
+    path = r"backend/form_templates/Home Life Service/inventory_admission.docx"
     doc.save(path)
     print(f"Created clean template at: {path}")
 

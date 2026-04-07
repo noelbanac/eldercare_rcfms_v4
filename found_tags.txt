@@ -1,18 +1,18 @@
-Scanning 26 files in C:\eldercare_rcfms\form_templates\Social Service...
+Scanning 28 files in backend/form_templates/Social Service...
 
 [2025 CASE FOLDER-updated.docx] - No obvious tags found.
 ----------------------------------------
 [admission_case_conference.docx]
-  Tags: case_category, client_age, client_name, condition, conference_date, date_admitted, date_submitted, item, noted_by, noted_by_designation, time_allotted, venue
+  Tags: case_category, client_age, client_name, condition, conference_date, date_admitted, date_submitted, item, noted_by_designation, time_allotted, venue
 ----------------------------------------
 [admission_slip.docx]
-  Tags: admission_time, noted_by_designation
+  Tags: admission_time, assigned_room, center_head_name, center_head_signature_url, civil_status, client_age, client_name, complete_address, educational_attainment, medical_findings, medical_staff_designation, medical_staff_name, medical_staff_name_signature_url, nearest_relative, noted_by_designation, prepared_by, prepared_by_signature_url, referred_by, referring_party_address, religion
 ----------------------------------------
 [after_care_plan.docx]
   Tags: noted_by_designation
 ----------------------------------------
 [case_conference.docx]
-  Tags: case_category, client_age, client_name, condition, conference_date, date_admitted, date_submitted, item, noted_by, noted_by_designation, time_allotted, venue
+  Tags: case_category, client_age, client_name, condition, conference_date, date_admitted, date_submitted, item, noted_by_designation, time_allotted, venue
 ----------------------------------------
 [case_transfer_summary.docx]
   Tags: address, birth_place, birthday, case_category, case_no, civil_status, client_age, date_admitted, educational_attainment, gender, noted_by_designation, referral_source, religion
@@ -21,24 +21,25 @@ Scanning 26 files in C:\eldercare_rcfms\form_templates\Social Service...
   Tags: address, age, category, civil_status, client_name, client_photo, date_admitted, date_of_birth, date_picture_taken, educ_attainment, gender, place_of_birth
 ----------------------------------------
 [clients_contract.docx]
-  Tags: custodian_name, noted_by, noted_by_designation
+  Tags: noted_by_designation
 ----------------------------------------
 [closing_summary.docx]
   Tags: noted_by_designation
 ----------------------------------------
 [discharge_conference.docx]
-  Tags: case_category, client_age, client_name, condition, conference_date, date_admitted, date_submitted, item, noted_by, noted_by_designation, time_allotted, venue
+  Tags: case_category, client_age, client_name, condition, conference_date, date_admitted, date_submitted, item, noted_by_designation, time_allotted, venue
 ----------------------------------------
 [discharge_slip.docx]
-  Tags: noted_by_designation
+  Tags: age, case_no, cmswdo_name, cmswdo_signature_url, custodian_address, custodian_name, custodian_relationship, discharge_date, discharge_time, noted_by_designation, prepared_by, prepared_by_signature_url, receiving_party_signature_url, resident_name
 ----------------------------------------
 [emergency_conference.docx]
-  Tags: case_category, client_age, client_name, condition, conference_date, date_admitted, date_submitted, item, noted_by, noted_by_designation, time_allotted, venue
+  Tags: case_category, client_age, client_name, condition, conference_date, date_admitted, date_submitted, item, noted_by_designation, time_allotted, venue
 ----------------------------------------
-[general_intake_sheet.docx] - No obvious tags found.
+[general_intake_sheet.docx]
+  Tags: action_taken, applicant_address, applicant_name, assessment_recommendation, birthday, birthplace, case_type_new, case_type_reopened, center, disability_nature, initial_assessment, nearest_relative_address, nearest_relative_name, problem_presented, referral_source, region
 ----------------------------------------
 [intervention_plan.docx]
-  Tags: case_control_no, center_head_name, client_name, date_prepared, goal_period, noted_by_designation, prepared_by
+  Tags: noted_by_designation
 ----------------------------------------
 [kasunduan.docx]
   Tags: noted_by_designation, prepared_by_designation
@@ -47,16 +48,15 @@ Scanning 26 files in C:\eldercare_rcfms\form_templates\Social Service...
   Tags: age
 ----------------------------------------
 [pre_admission_conference.docx]
-  Tags: case_category, client_age, client_name, condition, conference_date, date_admitted, date_submitted, item, noted_by, noted_by_designation, time_allotted, venue
+  Tags: case_category, client_age, client_name, condition, conference_date, date_admitted, date_submitted, item, noted_by_designation, time_allotted, venue
 ----------------------------------------
 [pre_discharge_conference.docx]
-  Tags: case_category, client_age, client_name, condition, conference_date, date_admitted, date_submitted, item, noted_by, noted_by_designation, time_allotted, venue
+  Tags: case_category, client_age, client_name, condition, conference_date, date_admitted, date_submitted, item, noted_by_designation, time_allotted, venue
 ----------------------------------------
 [pre_termination_plan.docx]
-  Tags: noted_by_designation
+  Tags: client_name, noted_by_designation
 ----------------------------------------
-[progress_notes.docx]
-  Tags: prepared_by_designation
+[progress_notes.docx] - No obvious tags found.
 ----------------------------------------
 [quarterly_narrative.docx]
   Tags: noted_by_designation
@@ -64,15 +64,18 @@ Scanning 26 files in C:\eldercare_rcfms\form_templates\Social Service...
 [requirements_checklist.docx]
   Tags: age
 ----------------------------------------
-[running_notes.docx]
-  Tags: client_name, notes, prepared_by, prepared_by_designation, running_date, supervisory_remarks
+[running_notes.docx] - No obvious tags found.
 ----------------------------------------
 [social_case_study.docx]
   Tags: noted_by_designation
 ----------------------------------------
 [termination_report.docx]
-  Tags: noted_by_designation
+  Tags: address, admission_reason, case_category, center_head_name, center_head_signature_url, closing_reason, custodian_name, date_admitted, date_discharged, division_chief_name, division_chief_signature_url, intervention_provided, length_of_stay, noted_by_designation, prepared_by, prepared_by_signature_url, recommendations, regional_director_name, regional_director_signature_url, social_functioning
 ----------------------------------------
 [updated_social_case_study.docx]
   Tags: noted_by_designation
+----------------------------------------
+[~$cial_case_study.docx] - Error: File is not a zip file
+----------------------------------------
+[~$mission_slip.docx] - Error: File is not a zip file
 ----------------------------------------

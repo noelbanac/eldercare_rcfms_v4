@@ -5,7 +5,7 @@ from docxtpl import DocxTemplate
 import uuid
 import tempfile
 
-file_path = r"C:\eldercare_rcfms\form_templates\Home Life Service\inventory_admission.docx"
+file_path = r"backend/form_templates/Home Life Service/inventory_admission.docx"
 temp_dir = tempfile.gettempdir()
 filled_path = os.path.join(temp_dir, f"debug_filled_{uuid.uuid4()}.docx")
 

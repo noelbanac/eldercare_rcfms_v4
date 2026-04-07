@@ -3,9 +3,9 @@ import glob
 import re
 import zipfile
 
-folder_path = r"C:\eldercare_rcfms\form_templates\Social Service"
+folder_path = r"backend/form_templates/Social Service"
 docx_files = sorted(glob.glob(os.path.join(folder_path, "*.docx")))
-output_file = r"c:\eldercare_rcfms\found_tags.txt"
+output_file = "found_tags.txt" 
 
 tag_pattern = re.compile(r"\{\{\s*([a-zA-Z0-9_]+)\s*\}\}")
 
