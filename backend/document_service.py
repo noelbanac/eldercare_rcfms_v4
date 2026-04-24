@@ -15,6 +15,8 @@ except ImportError:
     WINDOWS_PDF_AVAILABLE = False
 import threading
 from PIL import Image
+import subprocess
+import sys
 
 class DocumentService:
     _thread_local = threading.local()
@@ -138,11 +140,41 @@ class DocumentService:
                 print(f" * Returning DOCX (output_format=docx)")
                 return docx_path
 
-            # 7. Convert to PDF using Cached COM
+            # 7. Convert to PDF
             pdf_filename = f"generated_{template_type}_{timestamp}.pdf"
             pdf_path = os.path.join(temp_dir, pdf_filename)
             
             print(f" * Converting to PDF: {pdf_path}")
+            
+            # If on Linux, try LibreOffice first
+            if sys.platform != 'win32':
+                try:
+                    t_lo_start = time.time()
+                    print(" * Attempting LibreOffice conversion...")
+                    # Run libreoffice headless conversion
+                    process = subprocess.run([
+                        'libreoffice',
+                        '--headless',
+                        '--convert-to',
+                        'pdf',
+                        docx_path,
+                        '--outdir',
+                        temp_dir
+                    ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60)
+                    
+                    print(f" * [PERF] LibreOffice conversion time: {time.time() - t_lo_start:.2f}s")
+                    
+                    if process.returncode == 0 and os.path.exists(pdf_path):
+                        return pdf_path
+                    else:
+                        print(f" * LibreOffice error: {process.stderr.decode('utf-8', errors='ignore')}")
+                except Exception as e:
+                    print(f" * LibreOffice exception: {e}")
+                
+                # If we get here on Linux, it failed. Just return docx.
+                return docx_path
+
+            # Windows-only logic (COM & docx2pdf)
             try:
                 # Use cached COM for much faster conversion
                 t_com_start = time.time()
@@ -414,6 +446,7 @@ class DocumentService:
             print(f" * DEBUG: Searching in {target_folder} for {template_type}")
             for file in os.listdir(target_folder):
                 if file.startswith('~'): continue # Ignore temp files
+                if not file.lower().endswith('.docx'): continue # Only consider .docx templates
                 
                 # Check 1: Starts with template_type (ignoring case)
                 if file.lower().startswith(template_type.lower()):

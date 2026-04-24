@@ -286,7 +286,7 @@ class _AddResidentScreenState extends State<AddResidentScreen> {
     if (_isIdentityUnknown) {
       String honorific;
       if (_dateOfBirth != null) {
-        final age = DateTime.now().year - _dateOfBirth!.year;
+        final age = _calculateAge(_dateOfBirth!);
         if (age < 18) {
           honorific = _gender == 'female' ? 'Nene' : 'Toto';
         } else if (age < 60) {
@@ -562,6 +562,16 @@ class _AddResidentScreenState extends State<AddResidentScreen> {
       onSelect('OTHERS');
       otherController.text = value.toUpperCase();
     }
+  }
+
+  int _calculateAge(DateTime birthDate) {
+    DateTime now = DateTime.now();
+    int age = now.year - birthDate.year;
+    if (now.month < birthDate.month ||
+        (now.month == birthDate.month && now.day < birthDate.day)) {
+      age--;
+    }
+    return age;
   }
 
   Future<void> _loadLocations() async {
@@ -890,15 +900,23 @@ class _AddResidentScreenState extends State<AddResidentScreen> {
 
   Future<void> _selectDate(BuildContext context, bool isBirthDate) async {
     final now = DateTime.now();
-    final initialDate = isBirthDate
+    final birthdayLimit = DateTime(now.year - 60, now.month, now.day);
+    final lastDate = isBirthDate ? birthdayLimit : now;
+
+    DateTime initialDate = isBirthDate
         ? (_dateOfBirth ?? DateTime(now.year - 70))
         : (_admissionDate ?? now);
+
+    // Ensure initialDate is within bounds (prevents crash if existing resident is < 60)
+    if (initialDate.isAfter(lastDate)) {
+      initialDate = lastDate;
+    }
 
     final date = await showDatePicker(
       context: context,
       initialDate: initialDate,
       firstDate: DateTime(1900),
-      lastDate: now,
+      lastDate: lastDate,
     );
 
     if (date != null) {
@@ -977,7 +995,7 @@ class _AddResidentScreenState extends State<AddResidentScreen> {
                         _buildReviewItem(
                             'AGE',
                             _dateOfBirth != null
-                                ? '${DateTime.now().year - _dateOfBirth!.year}'
+                                ? '${_calculateAge(_dateOfBirth!)}'
                                 : '-'),
                         _buildReviewItem('SEX', _gender.toUpperCase()),
                         if (_selectedSocialWorkerId != null)
@@ -1224,6 +1242,13 @@ class _AddResidentScreenState extends State<AddResidentScreen> {
   Future<void> _saveResident() async {
     if (_dateOfBirth == null) {
       CustomSnackBar.show(context, message: 'Please select date of birth', isError: true);
+      return;
+    }
+
+    if (_calculateAge(_dateOfBirth!) < 60) {
+      CustomSnackBar.show(context,
+          message: 'Resident must be at least 60 years old (Senior Citizen)',
+          isError: true);
       return;
     }
 
@@ -2085,7 +2110,7 @@ class _AddResidentScreenState extends State<AddResidentScreen> {
                     if (_dateOfBirth != null) ...[
                       const SizedBox(width: 8),
                       Text(
-                        'AGE: ${DateTime.now().year - _dateOfBirth!.year}',
+                        'AGE: ${_calculateAge(_dateOfBirth!)}',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ],
