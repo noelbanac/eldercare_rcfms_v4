@@ -92,6 +92,8 @@ class _NotificationsPanelState extends State<NotificationsPanel> {
         return LucideIcons.fileText;
       case 'admission':
         return LucideIcons.userPlus;
+      case 'incomplete_profile':
+        return LucideIcons.userCog;
       default:
         return LucideIcons.bell;
     }
@@ -108,6 +110,8 @@ class _NotificationsPanelState extends State<NotificationsPanel> {
       case 'form_submitted':
       case 'admission':
         return AppColors.primary;
+      case 'incomplete_profile':
+        return AppColors.warning;
       default:
         return AppColors.textSecondary;
     }

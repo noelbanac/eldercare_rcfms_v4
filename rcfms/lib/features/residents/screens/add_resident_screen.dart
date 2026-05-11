@@ -18,6 +18,7 @@ import '../../../data/repositories/admin_repository.dart'; // Added
 import '../../../data/models/user_model.dart'; // Added
 import '../../../core/utils/text_formatters.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/utils/resident_completeness.dart';
 
 class AddResidentScreen extends StatefulWidget {
   final ResidentModel? resident;
@@ -1582,6 +1583,13 @@ class _AddResidentScreenState extends State<AddResidentScreen> {
             : null,
       );
 
+      // Check completeness of the saved profile
+      final checker = const ResidentCompletenessChecker();
+      final completeness = checker.check(residentForPdf);
+      final incompleteNote = completeness.isComplete
+          ? ''
+          : '\n\nNote: ${completeness.missingCount} optional field${completeness.missingCount == 1 ? ' is' : 's are'} still incomplete.';
+
       if (!mounted) return;
 
       await showDialog(
@@ -1589,8 +1597,44 @@ class _AddResidentScreenState extends State<AddResidentScreen> {
         barrierDismissible: false,
         builder: (dialogContext) => AlertDialog(
           title: const Text('Success'),
-          content: Text(
-              'Resident ${widget.resident != null ? "updated" : "saved"} successfully.\n\nWould you like to generate a PDF Summary?'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Resident ${widget.resident != null ? "updated" : "saved"} successfully.\n\nWould you like to generate a PDF Summary?',
+              ),
+              if (!completeness.isComplete) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.warning.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: AppColors.warning.withOpacity(0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(LucideIcons.info,
+                          size: 16, color: AppColors.warning),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '${completeness.missingCount} optional field${completeness.missingCount == 1 ? '' : 's'} still incomplete.',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.warning,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
           actions: [
             TextButton(
               onPressed: () {

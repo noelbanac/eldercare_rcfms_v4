@@ -4,6 +4,7 @@ import '../models/resident_model.dart';
 import '../models/ward_model.dart';
 import '../../core/constants/supabase_config.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/utils/resident_completeness.dart';
 import 'approval_repository.dart';
 
 /// Repository for resident operations
@@ -489,6 +490,24 @@ class ResidentRepository {
         _notifyResidentStatusChange(createdResident); // Fire and forget
       } catch (e) {
         _log('WARNING: Failed to trigger resident creation notification: $e');
+      }
+
+      // Notify creator if profile is less than 70% complete
+      try {
+        const checker = ResidentCompletenessChecker();
+        final completeness = checker.check(createdResident);
+        if (completeness.percentage < 0.70) {
+          final approvalRepo = ApprovalRepository();
+          await approvalRepo.createNotification(
+            userId: userId,
+            type: 'incomplete_profile',
+            title: 'Incomplete Profile: ${createdResident.firstName} ${createdResident.lastName}',
+            message: '${completeness.missingCount} fields are still missing. Tap to complete the profile.',
+            metadata: {'resident_id': createdResident.id},
+          );
+        }
+      } catch (e) {
+        _log('WARNING: Failed to send incomplete profile notification: $e');
       }
 
       return createdResident;

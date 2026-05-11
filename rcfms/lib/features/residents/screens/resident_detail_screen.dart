@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -32,6 +33,7 @@ import '../../../core/services/nfc_service.dart';
 
 import '../widgets/modern_notes/modern_resident_notes_sheet.dart';
 import '../../../core/widgets/custom_error_dialog.dart';
+import '../../../core/utils/resident_completeness.dart';
 
 class ResidentDetailScreen extends StatefulWidget {
   final String residentId;
@@ -53,11 +55,58 @@ class _ResidentDetailScreenState extends State<ResidentDetailScreen> {
   bool _isLoading = true;
   String? _error;
   bool _hasChanges = false;
+  bool _isUploadingImage = false;
 
   @override
   void initState() {
     super.initState();
     _loadResident();
+  }
+
+  Future<void> _pickAndUploadResidentPhoto() async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 75,
+    );
+
+    if (image == null) return;
+
+    setState(() => _isUploadingImage = true);
+
+    try {
+      final bytes = await image.readAsBytes();
+      final residentRepo = context.read<ResidentRepository>();
+      
+      await residentRepo.updateResident(
+        id: widget.residentId,
+        photoBytes: bytes,
+      );
+
+      if (!mounted) return;
+
+      await _loadResident();
+      _hasChanges = true;
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Resident profile picture updated'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        CustomErrorDialog.show(context,
+            title: 'Upload Failed',
+            error: e,
+            message: 'Could not upload resident profile picture.');
+      }
+    } finally {
+      if (mounted) setState(() => _isUploadingImage = false);
+    }
   }
 
   Future<void> _loadResident() async {
@@ -156,26 +205,96 @@ class _ResidentDetailScreenState extends State<ResidentDetailScreen> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         // Photo
-                        Hero(
-                          tag: 'resident-${resident.id}',
-                          child: CircleAvatar(
-                            radius: avatarRadius,
-                            backgroundColor: Colors.white,
-                            backgroundImage: resident.photoUrl != null
-                                ? CachedNetworkImageProvider(resident.photoUrl!)
-                                : null,
-                            child: resident.photoUrl == null
-                                ? Text(
-                                    resident.firstName[0] +
-                                        resident.lastName[0],
-                                    style: TextStyle(
-                                      fontSize: avatarRadius * 0.64,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.primary,
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            GestureDetector(
+                              onTap: resident.photoUrl != null
+                                  ? () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => Dialog(
+                                          backgroundColor: Colors.transparent,
+                                          elevation: 0,
+                                          child: Stack(
+                                            alignment: Alignment.center,
+                                            children: [
+                                              Hero(
+                                                tag: 'resident-${resident.id}-popup',
+                                                child: CircleAvatar(
+                                                  radius: 150,
+                                                  backgroundColor: Colors.white,
+                                                  backgroundImage: CachedNetworkImageProvider(resident.photoUrl!),
+                                                ),
+                                              ),
+                                              Positioned(
+                                                top: -10,
+                                                right: -10,
+                                                child: IconButton(
+                                                  icon: const Icon(Icons.close, color: Colors.white, size: 32),
+                                                  onPressed: () => Navigator.pop(context),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  : null,
+                              child: Hero(
+                                tag: 'resident-${resident.id}',
+                                child: CircleAvatar(
+                                  radius: avatarRadius,
+                                  backgroundColor: Colors.white,
+                                  backgroundImage: resident.photoUrl != null
+                                      ? CachedNetworkImageProvider(resident.photoUrl!)
+                                      : null,
+                                  child: resident.photoUrl == null
+                                      ? Text(
+                                          resident.firstName[0] +
+                                              resident.lastName[0],
+                                          style: TextStyle(
+                                            fontSize: avatarRadius * 0.64,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.primary,
+                                          ),
+                                        )
+                                      : null,
+                                ),
+                              ),
+                            ),
+                            if (canManage)
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: Material(
+                                  color: AppColors.primary,
+                                  shape: const CircleBorder(),
+                                  elevation: 2,
+                                  child: InkWell(
+                                    onTap: _isUploadingImage ? null : _pickAndUploadResidentPhoto,
+                                    customBorder: const CircleBorder(),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(6.0),
+                                      child: _isUploadingImage
+                                          ? const SizedBox(
+                                              width: 16,
+                                              height: 16,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: Colors.white,
+                                              ),
+                                            )
+                                          : const Icon(
+                                              LucideIcons.camera,
+                                              size: 16,
+                                              color: Colors.white,
+                                            ),
                                     ),
-                                  )
-                                : null,
-                          ),
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                         SizedBox(height: isSmallScreen ? 10 : 16),
                         // Name
@@ -340,6 +459,9 @@ class _ResidentDetailScreenState extends State<ResidentDetailScreen> {
                       ],
                     ),
                   ),
+
+                // Profile Completeness Banner
+                _buildCompletenessBanner(context, resident, userUnit, canManage),
 
                 // Quick Actions
                 _buildQuickActions(context, resident, userUnit),
@@ -669,6 +791,171 @@ class _ResidentDetailScreenState extends State<ResidentDetailScreen> {
         ],
       ],
     );
+  }
+
+  /// Build profile completeness banner
+  Widget _buildCompletenessBanner(
+    BuildContext context,
+    ResidentModel resident,
+    String? userUnit,
+    bool canManage,
+  ) {
+    final isPsych = userUnit == 'psych';
+    final checker = ResidentCompletenessChecker(isPsychResident: isPsych);
+    final completeness = checker.check(resident);
+
+    // Don't show banner if profile is complete
+    if (completeness.isComplete) return const SizedBox.shrink();
+
+    final pct = (completeness.percentage * 100).round();
+    final missingByCategory = completeness.missingByCategory;
+
+    // Color based on percentage
+    Color progressColor;
+    if (pct >= 80) {
+      progressColor = AppColors.success;
+    } else if (pct >= 50) {
+      progressColor = AppColors.warning;
+    } else {
+      progressColor = AppColors.error;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: progressColor.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: progressColor.withOpacity(0.3)),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          childrenPadding:
+              const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+          leading: Icon(LucideIcons.clipboardList, color: progressColor),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Profile $pct% Complete',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  color: progressColor,
+                ),
+              ),
+              const SizedBox(height: 6),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: completeness.percentage,
+                  backgroundColor: progressColor.withOpacity(0.15),
+                  valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+                  minHeight: 6,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${completeness.missingCount} field${completeness.missingCount == 1 ? '' : 's'} still need attention',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.color
+                      ?.withOpacity(0.7),
+                ),
+              ),
+            ],
+          ),
+          children: [
+            // Missing fields by category
+            ...missingByCategory.entries.map((entry) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        _getCategoryIcon(entry.key),
+                        size: 14,
+                        color: progressColor.withOpacity(0.8),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: RichText(
+                          text: TextSpan(
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(fontSize: 12),
+                            children: [
+                              TextSpan(
+                                text: '${entry.key}: ',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600),
+                              ),
+                              TextSpan(
+                                text: entry.value
+                                    .map((f) => f.label)
+                                    .join(', '),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
+            if (canManage) ...[
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    await context.pushNamed(
+                      'edit-resident',
+                      pathParameters: {'id': resident.id},
+                      extra: resident,
+                    );
+                    _loadResident();
+                  },
+                  icon: const Icon(LucideIcons.pencil, size: 16),
+                  label: const Text('Complete Profile'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: progressColor,
+                    side: BorderSide(color: progressColor),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData _getCategoryIcon(String category) {
+    switch (category) {
+      case 'Basic Info':
+        return LucideIcons.user;
+      case 'Address':
+        return LucideIcons.mapPin;
+      case 'Referral':
+        return LucideIcons.share2;
+      case 'Education':
+        return LucideIcons.graduationCap;
+      case 'Family':
+        return LucideIcons.users;
+      case 'Emergency Contact':
+        return LucideIcons.siren;
+      case 'Medical':
+        return LucideIcons.clipboardPlus;
+      case 'Assignment':
+        return LucideIcons.userCog;
+      default:
+        return LucideIcons.circle;
+    }
   }
 
   /// Start MoCA-P assessment with auto-filled resident data
