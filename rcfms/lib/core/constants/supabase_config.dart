@@ -21,7 +21,7 @@ class SupabaseConfig {
   /// Backend API URL for admin operations
   // For deployment: 'https://eldercare-rcfms-v2.onrender.com/api'
   // For local dev: 'http://127.0.0.1:5000/api'
-  static const String backendUrl = 'http://127.0.0.1:5000/api';
+  static const String backendUrl = 'https://eldercare-rcfms-v2.onrender.com/api';
 
   /// Storage bucket names
   static const String signaturesBucket = 'signatures';
