@@ -140,6 +140,12 @@ class ShellScaffold extends StatelessWidget {
           activeIcon: LucideIcons.shield,
           route: '/admin',
         ),
+      const NavItem(
+        label: 'Settings',
+        icon: LucideIcons.settings,
+        activeIcon: LucideIcons.settings,
+        route: '/settings',
+      ),
     ];
   }
 
@@ -232,32 +238,36 @@ class ShellScaffold extends StatelessWidget {
 
   Widget _buildBottomNav(
       BuildContext context, List<NavItem> navItems, int selectedIndex) {
+    // Filter out Settings for bottom nav
+    final bottomNavItems = navItems.where((n) => n.route != '/settings').toList();
+    final selectedRoute = navItems.isNotEmpty ? navItems[selectedIndex].route : '';
+
     // Show the centered NFC scan FAB for any user that has the residents
     // route in their nav (i.e. clinical users, not super admin).
-    final showScanFab = navItems.any((n) => n.route == '/residents');
-    final isCompact = navItems.length > 4;
+    final showScanFab = bottomNavItems.any((n) => n.route == '/residents');
+    final isCompact = bottomNavItems.length > 4;
 
     final children = <Widget>[];
-    final insertAt = showScanFab ? (navItems.length / 2).ceil() : -1;
+    final insertAt = showScanFab ? (bottomNavItems.length / 2).ceil() : -1;
 
-    for (var i = 0; i < navItems.length; i++) {
+    for (var i = 0; i < bottomNavItems.length; i++) {
       if (i == insertAt) {
         children.add(_BottomScanItem(
           compact: isCompact,
           onTap: () => context.push('/scan'),
         ));
       }
-      final item = navItems[i];
+      final item = bottomNavItems[i];
       children.add(Flexible(
         child: _BottomNavItem(
           item: item,
-          isSelected: i == selectedIndex,
+          isSelected: item.route == selectedRoute,
           compact: isCompact,
           onTap: () => context.go(item.route),
         ),
       ));
     }
-    if (showScanFab && insertAt == navItems.length) {
+    if (showScanFab && insertAt == bottomNavItems.length) {
       children.add(_BottomScanItem(
         compact: isCompact,
         onTap: () => context.push('/scan'),

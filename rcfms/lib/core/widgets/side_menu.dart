@@ -307,13 +307,16 @@ class _AppLogo extends StatelessWidget {
       width: 32,
       height: 32,
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(6),
       ),
-      child: const Icon(
-        LucideIcons.personStanding,
-        color: Colors.white,
-        size: 20,
+      clipBehavior: Clip.antiAlias,
+      child: Transform.scale(
+        scale: 2.2,
+        child: Image.asset(
+          'assets/images/app_logo.jpg',
+          fit: BoxFit.cover,
+        ),
       ),
     );
   }

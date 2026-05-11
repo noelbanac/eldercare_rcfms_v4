@@ -2,7 +2,7 @@ from docxtpl import DocxTemplate
 import os
 
 def list_signature_tags():
-    templates_dir = r"C:\Flutter_Projects\ec\form_templates"
+    templates_dir = r"backend/form_templates"
     output_file = 'tags_list.md'
     
     print(f"Scanning: {templates_dir}")

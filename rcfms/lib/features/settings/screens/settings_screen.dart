@@ -410,11 +410,17 @@ class SettingsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(LucideIcons.personStanding, color: AppColors.primary),
-            SizedBox(width: 12),
-            Text('RCFMS'),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: Transform.scale(
+                scale: 2.2,
+                child: Image.asset('assets/images/app_logo.jpg', width: 24, height: 24),
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Text('RCFMS'),
           ],
         ),
         content: Column(

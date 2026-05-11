@@ -97,20 +97,16 @@ class _LoginScreenState extends State<LoginScreen> {
           width: 80,
           height: 80,
           decoration: BoxDecoration(
-            color: AppColors.primary,
-            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withOpacity(0.3),
-                blurRadius: 24,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: const Icon(
-            LucideIcons.personStanding,
-            size: 40,
             color: Colors.white,
+            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Transform.scale(
+            scale: 2.2,
+            child: Image.asset(
+              'assets/images/app_logo.jpg',
+              fit: BoxFit.cover,
+            ),
           ),
         ),
         const SizedBox(height: 24),

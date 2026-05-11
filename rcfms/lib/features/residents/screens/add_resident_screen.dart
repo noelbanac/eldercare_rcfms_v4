@@ -891,15 +891,18 @@ class _AddResidentScreenState extends State<AddResidentScreen> {
 
   Future<void> _selectDate(BuildContext context, bool isBirthDate) async {
     final now = DateTime.now();
+    final lastDate = isBirthDate
+        ? DateTime(now.year - 60, now.month, now.day)
+        : now;
     final initialDate = isBirthDate
         ? (_dateOfBirth ?? DateTime(now.year - 70))
         : (_admissionDate ?? now);
 
     final date = await showDatePicker(
       context: context,
-      initialDate: initialDate,
+      initialDate: initialDate.isAfter(lastDate) ? lastDate : initialDate,
       firstDate: DateTime(1900),
-      lastDate: now,
+      lastDate: lastDate,
     );
 
     if (date != null) {
@@ -1226,6 +1229,18 @@ class _AddResidentScreenState extends State<AddResidentScreen> {
     if (_dateOfBirth == null) {
       CustomSnackBar.show(context,
           message: 'Please select date of birth', isError: true);
+      return;
+    }
+
+    final today = DateTime.now();
+    var age = today.year - _dateOfBirth!.year;
+    if (today.month < _dateOfBirth!.month ||
+        (today.month == _dateOfBirth!.month && today.day < _dateOfBirth!.day)) {
+      age--;
+    }
+    if (age < 60) {
+      CustomSnackBar.show(context,
+          message: 'Resident must be 60 years old or above', isError: true);
       return;
     }
 
