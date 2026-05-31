@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import '../../../core/constants/form_options.dart';
 
 import '../../../core/constants/app_constants.dart';
@@ -19,6 +20,9 @@ import 'add_resident_screen.dart'; // Import AddResidentScreen
 import '../widgets/resident_sidebar.dart';
 import 'transfer_resident_dialog.dart';
 import '../../../core/widgets/custom_error_dialog.dart';
+import '../../../core/services/onboarding_service.dart';
+import '../../../core/widgets/onboarding_helper.dart';
+import '../../../core/widgets/onboarding_info_button.dart';
 
 class ResidentsListScreen extends StatefulWidget {
   final String? initialFilter;
@@ -63,6 +67,12 @@ class _ResidentsListScreenState extends State<ResidentsListScreen> {
   // View State
   bool _isGridView = true;
   final Set<String> _selectedResidentIds = {};
+
+  // Onboarding GlobalKeys
+  final _searchBarKey = GlobalKey();
+  final _addResidentKey = GlobalKey();
+  final _filterKey = GlobalKey();
+  final _residentListKey = GlobalKey();
 
   void _toggleSelection(String id) {
     setState(() {
@@ -111,6 +121,73 @@ class _ResidentsListScreenState extends State<ResidentsListScreen> {
     _handleInitialFilter();
     _loadWards();
     _loadResidents();
+    _triggerOnboardingIfNeeded();
+  }
+
+  void _triggerOnboardingIfNeeded() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      OnboardingHelper.autoTriggerIfNeeded(
+        context: context,
+        screenId: OnboardingService.screenResidents,
+        targets: _buildOnboardingTargets(),
+        delay: const Duration(milliseconds: 800),
+      );
+    });
+  }
+
+  List<TargetFocus> _buildOnboardingTargets() {
+    return [
+      OnboardingHelper.buildTarget(
+        key: _searchBarKey,
+        title: 'Search Residents',
+        description:
+            'Type a name, code, or keyword to quickly find a resident in the system.',
+        icon: LucideIcons.search,
+        shape: ShapeLightFocus.RRect,
+        stepIndex: 0,
+        totalSteps: 4,
+      ),
+      OnboardingHelper.buildTarget(
+        key: _filterKey,
+        title: 'Filter & Sort',
+        description:
+            'Use filters to narrow results by ward, status, gender, or age group.',
+        icon: LucideIcons.listFilter,
+        shape: ShapeLightFocus.RRect,
+        stepIndex: 1,
+        totalSteps: 4,
+      ),
+      OnboardingHelper.buildTarget(
+        key: _addResidentKey,
+        title: 'Add a Resident',
+        description:
+            'Tap here to register a new resident into the system.',
+        icon: LucideIcons.userPlus,
+        shape: ShapeLightFocus.Circle,
+        stepIndex: 2,
+        totalSteps: 4,
+      ),
+      OnboardingHelper.buildTarget(
+        key: _residentListKey,
+        title: 'Resident Profiles',
+        description:
+            'Tap any resident to view their full profile, case files, and timeline.',
+        icon: LucideIcons.users,
+        shape: ShapeLightFocus.RRect,
+        align: ContentAlign.top,
+        stepIndex: 3,
+        totalSteps: 4,
+      ),
+    ];
+  }
+
+  void _showOnboarding() {
+    OnboardingHelper.showTutorial(
+      context: context,
+      targets: _buildOnboardingTargets(),
+      screenId: OnboardingService.screenResidents,
+    );
   }
 
   void _handleInitialFilter() {
@@ -263,8 +340,10 @@ class _ResidentsListScreenState extends State<ResidentsListScreen> {
                     automaticallyImplyLeading: false,
                     title: const Text('Residents'),
                     actions: [
+                      OnboardingInfoButton(onPressed: _showOnboarding),
                       if (canManage && !showSidebar)
                         IconButton(
+                          key: _addResidentKey,
                           icon: const Icon(LucideIcons.userPlus),
                           tooltip: 'Add Resident',
                           onPressed: () async {
@@ -274,6 +353,7 @@ class _ResidentsListScreenState extends State<ResidentsListScreen> {
                         ),
                       if (!showSidebar)
                         IconButton(
+                          key: _filterKey,
                           icon: const Icon(LucideIcons.listFilter),
                           onPressed: _showFilterSheet,
                         ),
@@ -284,6 +364,7 @@ class _ResidentsListScreenState extends State<ResidentsListScreen> {
               children: [
                 // Search and filters
                 Container(
+                  key: _searchBarKey,
                   color: Theme.of(context).cardColor,
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -395,6 +476,7 @@ class _ResidentsListScreenState extends State<ResidentsListScreen> {
 
                 // Residents list
                 Expanded(
+                  key: _residentListKey,
                   child: _buildContent(),
                 ),
               ],

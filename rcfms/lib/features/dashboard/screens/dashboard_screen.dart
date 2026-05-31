@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
@@ -17,6 +18,9 @@ import '../../admin/screens/admin_dashboard_screen.dart';
 import '../../../data/repositories/resident_repository.dart';
 import '../../../core/services/router_service.dart';
 import '../../../core/widgets/notifications_panel.dart';
+import '../../../core/services/onboarding_service.dart';
+import '../../../core/widgets/onboarding_helper.dart';
+import '../../../core/widgets/onboarding_info_button.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -41,11 +45,83 @@ class _DashboardScreenState extends State<DashboardScreen> with RouteAware {
 
   RealtimeChannel? _subscription;
 
+  // Onboarding GlobalKeys
+  final _greetingKey = GlobalKey();
+  final _notificationBellKey = GlobalKey();
+  final _quickStatsKey = GlobalKey();
+  final _formsReviewKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
     _loadData();
     _setupRealtimeSubscription();
+    _triggerOnboardingIfNeeded();
+  }
+
+  void _triggerOnboardingIfNeeded() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      OnboardingHelper.autoTriggerIfNeeded(
+        context: context,
+        screenId: OnboardingService.screenDashboard,
+        targets: _buildOnboardingTargets(),
+      );
+    });
+  }
+
+  List<TargetFocus> _buildOnboardingTargets() {
+    return [
+      OnboardingHelper.buildTarget(
+        key: _greetingKey,
+        title: 'Welcome to RCFMS!',
+        description:
+            'This is your dashboard — a real-time summary of your facility\'s activity and pending tasks.',
+        icon: LucideIcons.layoutDashboard,
+        shape: ShapeLightFocus.RRect,
+        stepIndex: 0,
+        totalSteps: 4,
+      ),
+      OnboardingHelper.buildTarget(
+        key: _notificationBellKey,
+        title: 'Notifications',
+        description:
+            'Tap here to view alerts, form approvals, and system updates.',
+        icon: LucideIcons.bell,
+        shape: ShapeLightFocus.Circle,
+        stepIndex: 1,
+        totalSteps: 4,
+      ),
+      OnboardingHelper.buildTarget(
+        key: _quickStatsKey,
+        title: 'Quick Overview',
+        description:
+            'These cards show resident counts, pending reviews, and more at a glance. Tap any card to navigate directly.',
+        icon: LucideIcons.chartColumn,
+        shape: ShapeLightFocus.RRect,
+        stepIndex: 2,
+        totalSteps: 4,
+      ),
+      OnboardingHelper.buildTarget(
+        key: _formsReviewKey,
+        title: 'Forms for Review',
+        description:
+            'Pending forms that need your attention will appear here. Tap any form to review and approve.',
+        icon: LucideIcons.clipboardList,
+        align: ContentAlign.top,
+        shape: ShapeLightFocus.RRect,
+        stepIndex: 3,
+        totalSteps: 4,
+      ),
+    ];
+  }
+
+  void _showOnboarding() {
+    OnboardingHelper.showTutorial(
+      context: context,
+      targets: _buildOnboardingTargets(),
+      screenId: OnboardingService.screenDashboard,
+    );
   }
 
   void _setupRealtimeSubscription() {
@@ -175,9 +251,11 @@ class _DashboardScreenState extends State<DashboardScreen> with RouteAware {
                     child: _buildHeader(context, user?.fullName ?? 'User'),
                   ),
 
+
                   // Quick Stats
                   SliverToBoxAdapter(
                     child: Padding(
+                      key: _quickStatsKey,
                       padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                       child: _buildQuickStats(context),
                     ),
@@ -186,6 +264,7 @@ class _DashboardScreenState extends State<DashboardScreen> with RouteAware {
                   // Forms for Review
                   SliverToBoxAdapter(
                     child: Padding(
+                      key: _formsReviewKey,
                       padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                       child: _buildFormsForReview(context),
                     ),
@@ -214,6 +293,7 @@ class _DashboardScreenState extends State<DashboardScreen> with RouteAware {
       child: Row(
         children: [
           Expanded(
+            key: _greetingKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -244,8 +324,12 @@ class _DashboardScreenState extends State<DashboardScreen> with RouteAware {
             ),
           ),
           if (MediaQuery.of(context).size.width < 800) ...[
+            // Onboarding Info Button
+            OnboardingInfoButton(onPressed: _showOnboarding),
+            const SizedBox(width: 4),
             // Notification Bell Icon with Badge
             GestureDetector(
+              key: _notificationBellKey,
               onTap: () => _showNotificationsPanel(context),
               child: Container(
                 width: 48,

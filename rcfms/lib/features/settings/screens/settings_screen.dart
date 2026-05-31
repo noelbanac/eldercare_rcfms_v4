@@ -3,14 +3,89 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/custom_snackbar.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../auth/bloc/auth_bloc.dart';
+import '../../../core/services/onboarding_service.dart';
+import '../../../core/widgets/onboarding_helper.dart';
+import '../../../core/widgets/onboarding_info_button.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  // Onboarding GlobalKeys
+  final _profileCardKey = GlobalKey();
+  final _signatureKey = GlobalKey();
+  final _appearanceKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    _triggerOnboardingIfNeeded();
+  }
+
+  void _triggerOnboardingIfNeeded() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      OnboardingHelper.autoTriggerIfNeeded(
+        context: context,
+        screenId: OnboardingService.screenSettings,
+        targets: _buildOnboardingTargets(),
+        delay: const Duration(milliseconds: 800),
+      );
+    });
+  }
+
+  List<TargetFocus> _buildOnboardingTargets() {
+    return [
+      OnboardingHelper.buildTarget(
+        key: _profileCardKey,
+        title: 'Your Profile',
+        description:
+            'View and edit your profile, including name, avatar, and role.',
+        icon: LucideIcons.user,
+        shape: ShapeLightFocus.RRect,
+        stepIndex: 0,
+        totalSteps: 3,
+      ),
+      OnboardingHelper.buildTarget(
+        key: _signatureKey,
+        title: 'Digital Signature',
+        description:
+            'Set up your digital signature for signing official forms electronically.',
+        icon: LucideIcons.penLine,
+        shape: ShapeLightFocus.RRect,
+        stepIndex: 1,
+        totalSteps: 3,
+      ),
+      OnboardingHelper.buildTarget(
+        key: _appearanceKey,
+        title: 'Appearance',
+        description:
+            'Switch between light and dark mode for your preferred viewing experience.',
+        icon: LucideIcons.moon,
+        shape: ShapeLightFocus.RRect,
+        stepIndex: 2,
+        totalSteps: 3,
+      ),
+    ];
+  }
+
+  void _showSettingsOnboarding() {
+    OnboardingHelper.showTutorial(
+      context: context,
+      targets: _buildOnboardingTargets(),
+      screenId: OnboardingService.screenSettings,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +114,10 @@ class SettingsScreen extends StatelessWidget {
             appBar: AppBar(
               automaticallyImplyLeading: false,
               title: const Text('Settings'),
+              actions: [
+                OnboardingInfoButton(onPressed: _showSettingsOnboarding),
+                const SizedBox(width: 8),
+              ],
             ),
             body: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
@@ -47,6 +126,7 @@ class SettingsScreen extends StatelessWidget {
                 children: [
                   // User profile card
                   Card(
+                    key: _profileCardKey,
                     child: Padding(
                       padding: const EdgeInsets.all(20),
                       child: Row(
@@ -151,6 +231,7 @@ class SettingsScreen extends StatelessWidget {
                       ),
                       const Divider(height: 1),
                       Column(
+                        key: _signatureKey,
                         children: [
                           _SettingsTile(
                             icon: LucideIcons.penLine,
@@ -247,10 +328,33 @@ class SettingsScreen extends StatelessWidget {
                       ),
                       const Divider(height: 1),
                       _SettingsTile(
+                        key: _appearanceKey,
                         icon: LucideIcons.moon,
                         title: 'Appearance',
                         subtitle: 'Theme and display settings',
                         onTap: () => context.push('/settings/appearance'),
+                      ),
+                      const Divider(height: 1),
+                      _SettingsTile(
+                        icon: LucideIcons.refreshCcw,
+                        title: 'App Walkthrough',
+                        subtitle: 'Replay the guided tour for all screens',
+                        onTap: () async {
+                          await OnboardingService.resetAllOnboarding();
+                          if (!mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text(
+                                'Walkthrough reset! Guides will show again on each screen.',
+                              ),
+                              backgroundColor: AppColors.success,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -530,6 +634,7 @@ class _SettingsTile extends StatelessWidget {
   final Widget? trailing;
 
   const _SettingsTile({
+    super.key,
     required this.icon,
     required this.title,
     required this.subtitle,

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
@@ -17,6 +18,9 @@ import '../../auth/bloc/auth_bloc.dart';
 import '../templates/form_templates.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/utils/interaction_utils.dart';
+import '../../../core/services/onboarding_service.dart';
+import '../../../core/widgets/onboarding_helper.dart';
+import '../../../core/widgets/onboarding_info_button.dart';
 
 class FormListScreen extends StatefulWidget {
   final String? initialTab;
@@ -51,6 +55,11 @@ class _FormListScreenState extends State<FormListScreen>
   bool _isProcessing = false;
   final _throttler =
       AppThrottler(throttleDuration: const Duration(milliseconds: 600));
+
+  // Onboarding GlobalKeys
+  final _tabBarKey = GlobalKey();
+  final _formListKey = GlobalKey();
+  final _headerKey = GlobalKey();
 
   @override
   void initState() {
@@ -108,6 +117,63 @@ class _FormListScreenState extends State<FormListScreen>
 
     _tabController.addListener(_handleTabSelection);
     _loadData();
+    _triggerOnboardingIfNeeded();
+  }
+
+  void _triggerOnboardingIfNeeded() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      OnboardingHelper.autoTriggerIfNeeded(
+        context: context,
+        screenId: OnboardingService.screenForms,
+        targets: _buildOnboardingTargets(),
+        delay: const Duration(milliseconds: 800),
+      );
+    });
+  }
+
+  List<TargetFocus> _buildOnboardingTargets() {
+    return [
+      OnboardingHelper.buildTarget(
+        key: _headerKey,
+        title: 'Forms Management',
+        description:
+            'This is your forms hub. Create, track, and manage all resident forms in one place.',
+        icon: LucideIcons.fileText,
+        shape: ShapeLightFocus.RRect,
+        stepIndex: 0,
+        totalSteps: 3,
+      ),
+      OnboardingHelper.buildTarget(
+        key: _tabBarKey,
+        title: 'Form Categories',
+        description:
+            'Switch between tabs to filter by status: Draft, For Signing, Signed, Returned, and more.',
+        icon: LucideIcons.layoutList,
+        shape: ShapeLightFocus.RRect,
+        stepIndex: 1,
+        totalSteps: 3,
+      ),
+      OnboardingHelper.buildTarget(
+        key: _formListKey,
+        title: 'Form List',
+        description:
+            'Each form shows its status, resident name, and date. Tap any form to view details or take action.',
+        icon: LucideIcons.clipboardList,
+        shape: ShapeLightFocus.RRect,
+        align: ContentAlign.top,
+        stepIndex: 2,
+        totalSteps: 3,
+      ),
+    ];
+  }
+
+  void _showOnboarding() {
+    OnboardingHelper.showTutorial(
+      context: context,
+      targets: _buildOnboardingTargets(),
+      screenId: OnboardingService.screenForms,
+    );
   }
 
   @override
@@ -705,6 +771,7 @@ class _FormListScreenState extends State<FormListScreen>
         children: [
           // Unified Two-Row Header
           Container(
+            key: _headerKey,
             color: Theme.of(context).cardColor,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -723,6 +790,7 @@ class _FormListScreenState extends State<FormListScreen>
                       ),
                       const Spacer(),
                       // Actions
+                      OnboardingInfoButton(onPressed: _showOnboarding),
                       AppIconButton(
                         icon: LucideIcons.refreshCw,
                         tooltip: 'Refresh',
@@ -760,6 +828,7 @@ class _FormListScreenState extends State<FormListScreen>
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: TabBar(
+                    key: _tabBarKey,
                     controller: _tabController,
                     tabs: _tabs.map((t) => Tab(text: t)).toList(),
                     labelColor: AppColors.primary,
@@ -776,6 +845,7 @@ class _FormListScreenState extends State<FormListScreen>
           ),
           const Divider(height: 1),
           Expanded(
+            key: _formListKey,
             child: TabBarView(
               controller: _tabController,
               children: List.generate(_tabs.length, (index) {
